@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Resume — Business Ethics Simulation</title>
+<!-- No external fonts -- using system serif stack -->
+<style>
+:root{
+  --red:#A32D2D;--red-dk:#791F1F;--red-lt:#FCEBEB;--red-md:#F7C1C1;
+  --ink:#2C2C2A;--charcoal:#444441;--gray:#888780;--border:#E8E4DE;
+  --paper:#F9F7F4;--white:#FFFFFF;
+  --ok:#1A6B3A;--ok-bg:#EAF7EF;
+  --warn:#8B5E00;--warn-bg:#FFF8E6;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,'Times New Roman',serif;background:#2C2C2A!important;color:#444441;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:80px;}
+
+/* HEADER */
+.hdr{width:100%;background:#2C2C2A!important;border-bottom:1px solid rgba(255,255,255,0.07);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.hdr-l{display:flex;flex-direction:column;}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:2px;}
+.hdr-title{font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:600;color:var(--paper);}
+.hdr-r{display:flex;align-items:center;gap:18px;}
+.dots{display:flex;gap:5px;align-items:center;}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.1);transition:all .4s;}
+.dot.active{background:var(--red);transform:scale(1.25);}
+.dot.done{background:rgba(163,45,45,0.3);}
+.live-score{font-size:12px;color:var(--gray);}
+.live-score span{font-weight:600;color:var(--paper);font-size:14px;}
+
+/* CARD */
+.wrap{width:100%;max-width:740px;padding:36px 20px 0;min-height:400px;}
+.card{background:#F9F7F4!important;border-radius:16px;overflow:hidden;box-shadow:0 28px 90px rgba(0,0,0,.55);animation:up .45s cubic-bezier(.16,1,.3,1) both;min-height:200px;}
+@keyframes up{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+/* BARS */
+.scene-bar{background:var(--ink);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;}
+.s-tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);font-weight:600;}
+.s-path{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--gray);}
+
+/* CONTENT */
+.body{padding:34px 34px 26px;}
+.scene-h{font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:18px;}
+.scene-p{font-size:16px;line-height:1.82;color:var(--charcoal);margin-bottom:26px;white-space:pre-line;}
+.prompt-lbl{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:13px;padding-top:18px;border-top:1px solid var(--border);}
+.choices{display:flex;flex-direction:column;gap:9px;}
+.ch{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:15px 18px;cursor:pointer;text-align:left;display:flex;gap:13px;align-items:flex-start;transition:border-color .2s,background .2s,transform .15s;font-family:Georgia,'Times New Roman',serif;width:100%;}
+.ch:hover{border-color:var(--red);background:var(--red-lt);transform:translateY(-1px);}
+.ch-ltr{width:27px;height:27px;border-radius:6px;background:var(--ink);color:var(--paper);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ch-txt{font-size:15px;line-height:1.65;color:var(--charcoal);padding-top:2px;}
+
+/* METER */
+.meter-row{background:rgba(44,44,42,.06);border-radius:8px;padding:12px 16px;margin-top:14px;display:flex;align-items:center;gap:10px;}
+.meter-bg{flex:1;height:5px;background:rgba(163,45,45,.15);border-radius:10px;overflow:hidden;}
+.meter-fill{height:100%;border-radius:10px;background:var(--red);transition:width .8s cubic-bezier(.16,1,.3,1);}
+.meter-lbl{font-size:12px;color:var(--gray);min-width:48px;text-align:right;}
+
+/* TRAIL */
+.trail{display:flex;gap:5px;flex-wrap:wrap;padding:11px 26px;background:rgba(44,44,42,.04);border-top:1px solid var(--border);}
+.t-item{font-size:11px;color:var(--gray);background:var(--white);border:1px solid var(--border);padding:2px 9px;border-radius:20px;}
+.t-cur{background:var(--red-lt)!important;border-color:var(--red-md)!important;color:var(--red)!important;}
+
+/* ENDING */
+.e-stripe{height:4px;width:100%;}
+.e-stripe.success{background:var(--ok);}
+.e-stripe.fail{background:var(--red);}
+.e-stripe.partial{background:#EF9F27;}
+.badge{display:inline-flex;align-items:center;font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:18px;}
+.badge.success{background:var(--ok-bg);color:var(--ok);}
+.badge.fail{background:var(--red-lt);color:var(--red);}
+.badge.partial{background:var(--warn-bg);color:var(--warn);}
+.reflect-box{margin-top:22px;background:var(--ink);border-radius:10px;padding:20px 22px;}
+.r-lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:9px;}
+.r-txt{font-size:14px;line-height:1.78;color:#C2C0B6;font-style:italic;}
+.score-box{margin-top:18px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:18px 22px;display:flex;align-items:center;gap:18px;}
+.big-score{font-family:Georgia,'Times New Roman',serif;font-size:52px;font-weight:700;line-height:1;}
+.big-score.success{color:var(--ok);}
+.big-score.fail{color:var(--red);}
+.big-score.partial{color:#EF9F27;}
+.score-detail{display:flex;flex-direction:column;gap:4px;}
+.sd-label{font-size:13px;color:var(--gray);}
+.sd-val{font-size:15px;font-weight:600;color:var(--ink);}
+.submit-msg{margin-top:12px;font-size:13px;color:var(--gray);font-style:italic;min-height:18px;}
+.submit-msg.ok{color:var(--ok);font-style:normal;font-weight:600;}
+.submit-msg.err{color:var(--red);font-style:normal;}
+.restart{display:inline-flex;align-items:center;gap:7px;margin-top:18px;padding:11px 22px;background:var(--ink);color:var(--paper);border:none;border-radius:8px;cursor:pointer;font-family:Georgia,'Times New Roman',serif;font-size:14px;font-weight:600;transition:background .2s,transform .15s;}
+.restart:hover{background:#1a1a18;transform:translateY(-1px);}
+
+/* START */
+.start{padding:48px 34px 40px;text-align:center;}
+.s-icon{width:64px;height:64px;background:var(--red-lt);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;}
+.s-icon svg{width:32px;height:32px;color:var(--red);}
+.s-head{font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.2;}
+.s-sub{font-size:15px;color:var(--gray);font-style:italic;margin-bottom:26px;}
+.s-p{font-size:16px;line-height:1.82;color:var(--charcoal);margin-bottom:8px;text-align:left;max-width:510px;margin-left:auto;margin-right:auto;}
+.s-note{font-size:13px;color:var(--gray);font-style:italic;margin-bottom:26px;}
+.field-wrap{max-width:360px;margin:0 auto 20px;text-align:left;}
+.field-lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:7px;display:block;}
+.field-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s;}
+.field-input:focus{border-color:var(--red);}
+.field-err{font-size:12px;color:var(--red);margin-top:5px;display:none;}
+/* sheet-wrap styles removed -- URL pre-filled by instructor */
+.go-btn{display:inline-flex;align-items:center;gap:8px;padding:15px 38px;background:var(--red);color:var(--paper);border:none;border-radius:10px;cursor:pointer;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:600;transition:background .2s,transform .15s;}
+.go-btn:hover{background:var(--red-dk);transform:translateY(-2px);}
+.setup{margin-top:26px;background:rgba(44,44,42,.06);border-radius:12px;padding:22px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto;}
+.setup-h{font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:13px;}
+.step-row{display:flex;gap:11px;margin-bottom:11px;align-items:flex-start;}
+.step-n{width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-t{font-size:13px;color:var(--charcoal);line-height:1.65;}
+.step-t code{background:rgba(163,45,45,.1);color:var(--red);padding:1px 5px;border-radius:3px;font-size:12px;}
+.code-block{margin-top:14px;background:rgba(44,44,42,.08);border-radius:8px;padding:14px;font-size:11px;color:var(--charcoal);line-height:1.75;white-space:pre-wrap;font-family:monospace;}
+
+@media(max-width:600px){
+  .body{padding:22px 18px 18px;}
+  .scene-h{font-size:21px;}
+  .hdr{padding:13px 14px;}
+  .start{padding:34px 20px 30px;}
+  .s-head{font-size:24px;}
+}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-l">
+    <span class="eyebrow">Business Ethics — Unit 1</span>
+    <span class="hdr-title">The Resume</span>
+  </div>
+  <div class="hdr-r">
+    <div class="dots" id="dots"></div>
+    <div class="live-score">Points: <span id="score-live">0</span></div>
+  </div>
+</header>
+<div class="wrap"><div class="card" id="card">
+<div class="start" id="static-start">
+<div class="s-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+<div class="s-head">The Resume</div>
+<div class="s-sub">A Business Ethics Simulation &mdash; Unit 1</div>
+<div class="s-p">You are a college sophomore. Tonight is the deadline for what could be your best internship opportunity yet &mdash; a paid marketing position at a firm that recruits from your school every year.</div>
+<div class="s-p">You open your resume. And the familiar discomfort begins.</div>
+<div class="s-p">The decisions you make in the next fifteen minutes will follow you further than you think.</div>
+<div class="s-note">There is no single right path. But every path has real consequences.</div>
+<div class="field-wrap">
+<label class="field-lbl" for="nIn">Your full name</label>
+<input class="field-input" id="nIn" type="text" placeholder="First Last" autocomplete="name">
+<div class="field-err" id="nErr">Please enter your name to continue.</div>
+</div>
+
+<button class="go-btn" onclick="startGame()">Begin the Scenario &#9654;</button>
+<div class="setup">
+<div class="setup-h">Instructor: Google Sheets Setup (one time, ~10 minutes)</div>
+<div class="step-row"><div class="step-n">1</div><div class="step-t">Go to <code>script.google.com</code>, sign in, click <code>New project</code></div></div>
+<div class="step-row"><div class="step-n">2</div><div class="step-t">Delete all existing code and paste the Apps Script code shown below.</div></div>
+<div class="step-row"><div class="step-n">3</div><div class="step-t">Click <code>Deploy &rarr; New deployment &rarr; Web app</code>. Set Execute as: Me and Who has access: Anyone. Copy the Web App URL.</div></div>
+<div class="step-row"><div class="step-n">4</div><div class="step-t">Paste that URL into the field above before distributing to students.</div></div>
+<div class="step-row"><div class="step-n">5</div><div class="step-t">Each submission adds a row: Timestamp, Name, Score, Percent, Letter Grade, Path, Choices.</div></div>
+<div class="code-block">function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      'Timestamp','Name','Score','Percent',
+      'Letter Grade','Path','Choices'
+    ]);
+  }
+  sheet.appendRow([
+    e.parameter.timestamp || '',
+    e.parameter.name || '',
+    e.parameter.score || '',
+    e.parameter.pct || '',
+    e.parameter.grade || '',
+    e.parameter.path || '',
+    e.parameter.choices || ''
+  ]);
+  return ContentService
+    .createTextOutput('OK')
+    .setMimeType(ContentService.MimeType.TEXT);
+}</div>
+</div>
+</div>
+</div></div>
+<script>
+// ═══════════════════════════════════════════
+// GOOGLE SHEETS
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// INSTRUCTOR: PASTE YOUR GOOGLE APPS SCRIPT URL BELOW
+// Replace the empty string with your Web App URL
+// Example: let SHEET_URL = 'https://script.google.com/macros/s/ABC123.../exec';
+// ═══════════════════════════════════════════════════════
+let SHEET_URL = '';
+async function submitGrade(name, pts, pct, pathName, choices) {
+  if (!SHEET_URL) return { ok: false, msg: 'No gradebook URL — show this screen to your instructor.' };
+  try {
+    const p = new URLSearchParams({ name, score: pts, pct, path: pathName, choices: choices.join(' › '), timestamp: new Date().toLocaleString() });
+    await fetch(SHEET_URL + '?' + p.toString(), { method: 'GET', mode: 'no-cors' });
+    return { ok: true, msg: '✓ Score submitted to gradebook.' };
+  } catch(e) {
+    return { ok: false, msg: 'Could not reach gradebook. Screenshot this screen for your instructor.' };
+  }
+}
+
+// ═══════════════════════════════════════════
+// SCORING
+// Each path has its own max — we normalise to 100
+// PATH A max = 100, PATH B max = 100, PATH C max = 100
+// ═══════════════════════════════════════════
+const PTS = {
+  // PATH A — Honest resume
+  a1_submit_honest: 15,       // Scene A1: submit honest resume
+  a2_own_number: 20,          // Scene A2: own the GPA number directly
+  a3_give_context: 20,        // Scene A3: explain the arc (2.3 → 3.1 → 3.4)
+  a3_vague: 8,                // Scene A3: vague improvement story
+  a4_full_story: 25,          // NOTE: unused key — absorbed into a3_give_context flow
+  a4_professional: 12,        // NOTE: unused key — absorbed into a3_vague flow
+  a5_ask_question: 20,        // Scene A5: ask Danielle a strong question back
+  a5_passive: 8,              // Scene A5: passive close
+
+  // PATH B — Rounded GPA
+  b1_round: 5,                // Scene B1: round GPA (small points for partial honesty)
+  b2_feel_uneasy: 8,          // Scene B2: acknowledge discomfort (internal honesty)
+  b2_dismiss: 2,              // Scene B2: dismiss the worry
+  b3_correct_before: 18,      // Scene B3: correct before transcript requested
+  b3_correct_after_asked: 10, // Scene B3: correct when directly asked
+  b3_silent: 0,               // Scene B3: say nothing
+  b4_full_context: 20,        // Scene B4: give full context after correcting
+  b4_minimal: 8,              // Scene B4: minimal correction only
+  b5_own_mistake: 20,         // Scene B5: fully own the mistake
+  b5_deflect: 5,              // Scene B5: deflect/minimise
+
+  // PATH C — Fabricated resume
+  c1_fabricate: 0,            // Scene C1: fabricate (zero — no ethical credit)
+  c2_warn_ignored: 0,         // Scene C2: roommate warns, you dismiss
+  c2_warn_pivot: 8,           // Scene C2: roommate warns, you reconsider
+  c3_email_before: 20,        // Scene C3: email Danielle before interview
+  c3_bluff: 0,                // Scene C3: prepare to bluff
+  c4_clean_immediately: 18,   // Scene C4: come clean at start of interview
+  c4_bluff_fails: 0,          // Scene C4: try to bluff, get caught
+  c5_full_honest: 22,         // Scene C5: fully honest after caught/clean
+  c5_partial: 8,              // Scene C5: partial honesty only
+};
+
+// Path maximums (for normalising to 100%)
+const PATH_MAX = {
+  A: 75, // 15+20+20+20 = 75 actual max on best Path A run
+  B: 71, // 5+8+18+20+20 = 71 on best B path
+  C: 68, // 0+8+20+18+22 = 68 on best C path
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let studentName = '';
+let trail = [];
+let scoreLog = [];
+let rawScore = 0;
+let pathKey = 'A'; // set when path is determined
+let TOTAL_STEPS = 5;
+
+// ═══════════════════════════════════════════
+// SCENES
+// ═══════════════════════════════════════════
+const S = {
+
+// ─────────────────────────────────────────
+// START
+// ─────────────────────────────────────────
+start: { type: 'start' },
+
+// ─────────────────────────────────────────
+// SCENE 1 — SHARED STARTING POINT
+// ─────────────────────────────────────────
+s1: {
+  type: 'decision', tag: 'Scene 1 of 5', path: 'The Starting Point', step: 1,
+  head: 'The Resume',
+  body: `You open the job posting one more time.
+
+Meridian Marketing Group. Paid summer internship. Twenty hours per week. They prefer marketing or business majors with a GPA of 3.0 or above. You know two people who interned there. Both said it changed everything for them.
+
+You open your resume. The cursor blinks next to your GPA: 2.8.
+
+You had a brutal first semester. A family situation back home pulled you under. A professor who graded on a curve that crushed the class. A course you should have dropped but did not. Since then you have posted a 3.1 and a 3.4. You know what happened, and you know what changed. But the number is still 2.8.
+
+You were technically a Marketing Club member. You went to two meetings before the semester swallowed you.
+
+You work part-time at Campus Grounds. Your title is Barista. But for three months you trained four new hires and ran the Saturday morning shift solo while your manager was on medical leave. Nothing on your resume reflects that.
+
+The deadline is in four hours.`,
+  prompt: 'What do you submit?',
+  choices: [
+    { ltr:'A', txt: 'Submit the honest resume. GPA 2.8, Marketing Club Member, Barista. The cover letter will explain the arc.', next: 'a2', pts: 'a1_submit_honest', label: 'Submitted honest resume', path: 'A' },
+    { ltr:'B', txt: 'Make one change — round the GPA to 3.0. Everything else stays exactly as written.', next: 'b2', pts: 'b1_round', label: 'Rounded GPA to 3.0', path: 'B' },
+    { ltr:'C', txt: 'Rewrite aggressively. GPA becomes 3.2. Marketing Club becomes Event Coordinator. Barista becomes Operations Lead and Staff Trainer.', next: 'c2', pts: 'c1_fabricate', label: 'Fabricated resume', path: 'C' },
+  ]
+},
+
+// ═══════════════════════════════════════════
+// PATH A — HONEST RESUME
+// ═══════════════════════════════════════════
+a2: {
+  type: 'decision', tag: 'Scene 2 of 5', path: 'Path A — Honest', step: 2,
+  head: 'Four Days of Silence',
+  body: `You submit and close your laptop.
+
+Day one: nothing. Day two: nothing. You watch a classmate mention over lunch that she applied too. Her GPA is a 3.4. You start doing the math in your head and it does not feel good.
+
+Day three: still nothing. You wonder if the honest resume was naive. Maybe you needed to show a 3.0 just to get the call. Maybe the cover letter was not enough. Maybe the 2.8 was eliminated before anyone read the second paragraph.
+
+Day four: your phone rings. Unknown local number.
+
+Meridian. Danielle Chen, Marketing Director. She liked your cover letter — specifically the line about understanding what a hard semester teaches you. She wants to bring you in Thursday at two.
+
+Relief. Then immediately something else. She is holding your resume. She is going to ask about the number. You knew this call might come and now here it is.
+
+Thursday is in four days. You have time to prepare.`,
+  prompt: 'How do you prepare for the GPA question?',
+  choices: [
+    { ltr:'A', txt: 'You sit down and write out the exact numbers and the exact story — 2.3 first semester, 3.1 and 3.4 after, what specifically changed. You practice saying it out loud until it does not feel defensive.', next: 'a3', pts: 'a2_own_number', label: 'Prepared the full honest answer' },
+    { ltr:'B', txt: 'You plan to acknowledge it briefly and pivot quickly to your strengths. Keep the focus off the number as much as possible.', next: 'a3_deflect', pts: null, label: 'Planned to deflect the GPA question' },
+  ]
+},
+
+a3: {
+  type: 'decision', tag: 'Scene 3 of 5', path: 'Path A — Prepared', step: 3,
+  head: 'Thursday. She Asks.',
+  body: `The interview starts well. Danielle is direct and smart. She has clearly read your application. Twenty minutes in she sets your resume on the desk between you.
+
+"Your GPA is a 2.8. We list 3.0 as a preference. Walk me through that."
+
+You were ready for this. You give her the numbers exactly: 2.3 first semester, 3.1 the next, 3.4 the one after. You tell her the semester was hard for reasons outside academics — you do not dramatise it, but you name it. You tell her what changed.
+
+She listens without writing anything down. When you finish she says: "Okay. What specifically changed in how you approached the work?"
+
+She is not trying to catch you. She is asking a real question.`,
+  prompt: 'What do you tell her changed?',
+  choices: [
+    { ltr:'A', txt: 'The real story: you stopped pretending you could handle everything alone. You started asking for help earlier. You learned that showing up when things are hard is a different skill than showing up when they are easy — and you know which one you have now.', next: 'a4', pts: 'a3_give_context', label: 'Gave specific honest context for improvement' },
+    { ltr:'B', txt: 'Keep it professional: better time management, more focused study habits, learned to prioritise. True, but the surface version.', next: 'a4_surface', pts: 'a3_vague', label: 'Gave general improvement answer' },
+  ]
+},
+
+a3_deflect: {
+  type: 'decision', tag: 'Scene 3 of 5', path: 'Path A — Deflecting', step: 3,
+  head: 'Thursday. The Pivot Fails.',
+  body: `The interview is going well until Danielle sets your resume on the desk.
+
+"Your GPA is a 2.8. We list 3.0 as a preference. Walk me through that."
+
+You start with your pivot — you acknowledge the number briefly and move toward your recent work, the training at Campus Grounds, your interest in the firm. Danielle nods and writes something.
+
+Then she comes back.
+
+"I hear you on those things. But I asked about the GPA specifically. What happened first semester, and what changed after?"
+
+She is not going to let you around it. You can answer directly right now, or keep trying to steer away from it.`,
+  prompt: 'What do you do?',
+  choices: [
+    { ltr:'A', txt: 'Give her the honest answer you should have led with: 2.3 first semester, the family situation, 3.1 and 3.4 since, what actually changed.', next: 'a4_recover', pts: 'a3_give_context', label: 'Recovered with honest answer' },
+    { ltr:'B', txt: 'Keep deflecting: "It was a difficult semester for various reasons. I have moved past it and my recent record reflects that."', next: 'end_deflect_fail', pts: 'a3_vague', label: 'Continued to deflect' },
+  ]
+},
+
+a4: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path A — Full Story', step: 4,
+  head: 'She Sets Down Her Pen',
+  body: `Danielle listens to all of it. The family situation. What it cost you that semester. How you came back. She does not rush you.
+
+When you finish she is quiet for a moment. Then: "That took something to say. Most people I interview with a dip in their record give me time management. You gave me the actual reason."
+
+She moves through three more questions — about the firm, about a campaign you discussed in your cover letter, about how you handled a difficult situation at your job. You answer all of them well.
+
+Near the end of the interview she pauses and looks at your resume again.
+
+"One thing I always ask at the end: do you have any questions for me?"
+
+This is your last chance to leave an impression. You have a choice about how you use it.`,
+  prompt: 'What do you ask?',
+  choices: [
+    { ltr:'A', txt: 'Ask something real: "The posting mentions preference for 3.0 but you brought me in anyway. What made you make that call — and what does someone have to demonstrate to justify it?"', next: 'end_a_full_success', pts: 'a5_ask_question', label: 'Asked a strong direct question' },
+    { ltr:'B', txt: 'Ask something safe: "What does a typical week look like for the intern?"', next: 'end_a_good', pts: 'a5_passive', label: 'Asked a safe closing question' },
+  ]
+},
+
+a4_surface: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path A — Surface Answer', step: 4,
+  head: 'A Flat Moment',
+  body: `Danielle nods at your answer. She writes something and moves on.
+
+The rest of the interview goes smoothly — she asks about the firm, about a campaign you mentioned, about your work experience. You answer well.
+
+At the end she asks if you have questions. You sense the interview ending. You gave her a solid but unremarkable answer about the GPA. You have one more moment to make an impression.`,
+  prompt: 'How do you close?',
+  choices: [
+    { ltr:'A', txt: 'Take a risk: "I want to go back to the GPA question. I gave you the professional answer. The real answer is I stopped pretending I could handle everything alone. I learned that semester what I am actually made of. I should have said that the first time."', next: 'end_a_recover_close', pts: 'a5_ask_question', label: 'Recovered honesty at close' },
+    { ltr:'B', txt: 'Close professionally and let the interview end on a solid note.', next: 'end_a_solid', pts: 'a5_passive', label: 'Closed professionally' },
+  ]
+},
+
+a4_recover: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path A — Recovered', step: 4,
+  head: 'The Recovery',
+  body: `You give her the honest answer. The 2.3. The family situation. The 3.1 and 3.4 after. What changed.
+
+Danielle's expression shifts — not warmly, but something in her settles.
+
+"That is what I was looking for," she says. "I noticed you tried to steer away from it first. What stopped you from leading with that?"
+
+This is a direct question about your behaviour in this interview. You can answer it honestly or deflect again.`,
+  prompt: 'What do you say?',
+  choices: [
+    { ltr:'A', txt: '"Honestly? I was managing how I looked. I thought getting to my strengths faster would help my case. I was wrong — the honest version is stronger and I should have known that."', next: 'end_a_recovered', pts: 'a5_ask_question', label: 'Honestly explained the deflection' },
+    { ltr:'B', txt: '"I just wanted to make sure the full picture came through." Diplomatic but not fully honest.', next: 'end_a_solid', pts: 'a5_passive', label: 'Gave diplomatic answer about deflection' },
+  ]
+},
+
+// ═══════════════════════════════════════════
+// PATH B — ROUNDED GPA
+// ═══════════════════════════════════════════
+b2: {
+  type: 'decision', tag: 'Scene 2 of 5', path: 'Path B — Rounded GPA', step: 2,
+  head: 'The Night After You Submit',
+  body: `You submitted the resume with the rounded GPA and went to bed.
+
+Now it is midnight and you are awake.
+
+It is two tenths of a point. Basically a rounding error. The firm listed 3.0 as a preference, not a requirement. Your cover letter is strong. Your actual record is trending exactly right — 2.3, 3.1, 3.4. The rounded number arguably represents where you are heading more than where you have been.
+
+But you know what the transcript shows. And you know that if they request one — which most firms do before finalising — it will show 2.8 and your resume says 3.0 and those are two different numbers.
+
+You could fix it right now. Email them an updated resume with the correct number before anyone has even read the application. Or you could leave it and see what happens.`,
+  prompt: 'What do you decide at midnight?',
+  choices: [
+    { ltr:'A', txt: 'Email a correction immediately: "I submitted my resume earlier and I need to correct one item — my GPA is 2.8, not 3.0. I apologise for the error." Send it tonight.', next: 'b3_corrected_early', pts: 'b2_feel_uneasy', label: 'Emailed a correction that night' },
+    { ltr:'B', txt: 'Leave it. You rationalise: it is close enough, the trend tells the real story, and if they ask you will explain it. You go back to sleep.', next: 'b3_left_it', pts: 'b2_dismiss', label: 'Rationalised and left it' },
+  ]
+},
+
+b3_corrected_early: {
+  type: 'decision', tag: 'Scene 3 of 5', path: 'Path B — Early Correction', step: 3,
+  head: 'The Email Sent at Midnight',
+  body: `You send the correction and finally sleep.
+
+Three days later Danielle Chen calls. She wants to bring you in.
+
+Before the interview she mentions the email: "I got your correction. I appreciate that."
+
+You are not sure how to read her tone. You are in the interview now, sitting across from her. She has your resume on the desk — the corrected one.
+
+"Tell me about the 2.8," she says. "And while you are at it, tell me about the email."`,
+  prompt: 'How do you respond to both questions?',
+  choices: [
+    { ltr:'A', txt: 'Address both directly: "The 2.8 has a real story behind it — 2.3 first semester, 3.1 and 3.4 since, here is exactly what changed. The email happened because I could not sleep knowing I had submitted something inaccurate. It was not a hard call."', next: 'b4_full', pts: 'b3_correct_before', label: 'Addressed both the GPA and the email honestly' },
+    { ltr:'B', txt: 'Focus on the GPA story and treat the email as incidental: "The number is 2.8, here is the trend. I caught an error and corrected it, that is all."', next: 'b4_minimal', pts: 'b3_correct_before', label: 'Addressed GPA, minimised the email' },
+  ]
+},
+
+b3_left_it: {
+  type: 'decision', tag: 'Scene 3 of 5', path: 'Path B — Left the Error', step: 3,
+  head: 'You Got the Interview',
+  body: `The call comes two days later. Danielle Chen. You are in.
+
+The interview goes well. You are prepared, engaged, and you answer her questions with confidence. Near the end she says:
+
+"We move quickly once we decide. Standard process is to request an official transcript directly from the registrar — usually two to three business days. Assuming everything is consistent, I think you have a strong shot."
+
+She smiles and starts to close her notebook.
+
+Two tenths of a point. The transcript shows 2.8. Your resume says 3.0. She just told you they are going to check.
+
+You have maybe thirty seconds before she stands up.`,
+  prompt: 'What do you do?',
+  choices: [
+    { ltr:'A', txt: '"Before you do that — I need to correct something. My GPA is 2.8, not 3.0. I rounded it on the resume and I should not have. I want to give you the real number and the context behind it."', next: 'b4_in_room', pts: 'b3_correct_after_asked', label: 'Corrected in the interview room' },
+    { ltr:'B', txt: 'Say nothing. Shake her hand. Two tenths. Maybe it will not matter. You walk out.', next: 'end_b_rescinded', pts: 'b3_silent', label: 'Said nothing, left it to chance' },
+  ]
+},
+
+b4_full: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path B — Full Context', step: 4,
+  head: 'The Real Story',
+  body: `You give her everything. The 2.3 first semester — the family situation, what it actually cost you. The two semesters that followed. What you changed about how you worked, how you asked for help, what you learned about yourself under pressure.
+
+Danielle listens carefully. She makes notes.
+
+"And the email," she says. "Most people would have left it and hoped the transcript went unnoticed. Why did you send it?"
+
+This is the real question. She is not asking about the GPA anymore.`,
+  prompt: 'What do you say?',
+  choices: [
+    { ltr:'A', txt: '"Because I want this job but not at the cost of starting the relationship with something untrue. If the correct number eliminates me, it eliminates me. I would rather know that than spend the internship knowing I got in on a number that was not right."', next: 'end_b_full_success', pts: 'b5_own_mistake', label: 'Gave principled reason for self-correcting' },
+    { ltr:'B', txt: '"I just figured it was better to be upfront. I did not want it to become an issue later."', next: 'end_b_good', pts: 'b5_deflect', label: 'Gave pragmatic reason for self-correcting' },
+  ]
+},
+
+b4_minimal: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path B — Minimal Correction', step: 4,
+  head: 'She Pushes',
+  body: `Danielle nods at your answer. Then she sets down her pen.
+
+"You corrected a resume error at midnight. Most applicants do not do that. I want to understand why — not the practical reason. The real reason."
+
+She is asking you to go deeper. You can give her the surface answer again or you can tell her what actually happened at midnight when you could not sleep.`,
+  prompt: 'What do you tell her?',
+  choices: [
+    { ltr:'A', txt: 'Tell her the truth: "I could not sleep because I knew I had submitted something inaccurate and I wanted this job too much to start it that way. The correction was the only thing that felt right."', next: 'end_b_full_success', pts: 'b5_own_mistake', label: 'Told her the honest midnight reason' },
+    { ltr:'B', txt: 'Stay on the surface: "It was the right thing to do professionally. I take accuracy seriously."', next: 'end_b_good', pts: 'b5_deflect', label: 'Stayed on the professional surface' },
+  ]
+},
+
+b4_in_room: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path B — In-Room Correction', step: 4,
+  head: 'She Puts the Notebook Down',
+  body: `Danielle sets the notebook down. Her expression does not change immediately.
+
+"Okay," she says. "Tell me about it."
+
+She is not closing the door. She is giving you the floor. You can give her the full picture or you can keep it brief and apologetic.`,
+  prompt: 'What do you say?',
+  choices: [
+    { ltr:'A', txt: 'Give her everything: the real first semester number, what happened, what changed, and a direct acknowledgment that rounding it was wrong regardless of how close the numbers were.', next: 'end_b_room_full', pts: 'b4_full_context', label: 'Gave full context in the room' },
+    { ltr:'B', txt: '"It is 2.8. I rounded it, which I should not have. I apologise for that." Brief and direct, no additional context.', next: 'end_b_room_brief', pts: 'b4_minimal', label: 'Brief correction only in the room' },
+  ]
+},
+
+// ═══════════════════════════════════════════
+// PATH C — FABRICATED RESUME
+// ═══════════════════════════════════════════
+c2: {
+  type: 'decision', tag: 'Scene 2 of 5', path: 'Path C — Fabricated', step: 2,
+  head: 'The Warning You Almost Missed',
+  body: `You submitted the resume and felt a brief flush of confidence. The numbers look polished. The titles look impressive. The application looks like someone who deserves this.
+
+Two days later your roommate asks to borrow a stapler and sees your resume on your desk. She picks it up.
+
+"Event Coordinator? I thought you only went to two Marketing Club meetings."
+
+Your stomach tightens.
+
+"I helped out with some things. It is not totally inaccurate."
+
+She looks at you for a moment. "It is your call. But I was in the Marketing Club for two years. The coordinator role is a real position. If they ask you what events you ran, what are you going to say?"
+
+She puts the resume down and leaves.
+
+You have not heard from Meridian yet.`,
+  prompt: 'What do you do with the warning?',
+  choices: [
+    { ltr:'A', txt: 'Take it seriously. Look up the Marketing Club online, find who the faculty advisor is, and think hard about whether you can sustain the coordinator claim under questioning.', next: 'c3_investigate', pts: 'c2_warn_pivot', label: 'Took the warning seriously' },
+    { ltr:'B', txt: 'Dismiss it. You will keep the answers vague. No one goes that deep on a resume in an interview. You put it out of your mind.', next: 'c3_dismiss', pts: 'c2_warn_ignored', label: 'Dismissed the warning' },
+  ]
+},
+
+c3_investigate: {
+  type: 'decision', tag: 'Scene 3 of 5', path: 'Path C — Reconsidering', step: 3,
+  head: 'What You Find',
+  body: `You look up the Marketing Club page.
+
+Current officers. A faculty advisor named Danielle Chen.
+
+You stop.
+
+Danielle Chen is the Marketing Director at Meridian. The person interviewing you. The faculty advisor of the club you claimed to have coordinated.
+
+You sit with this for a long time. 
+
+You have not heard from Meridian yet. You could email them now and correct your resume before the call comes — if it comes. Or you could wait and see if you even get an interview. Or you could look up what events the club ran last year and try to prepare a story that might hold together.
+
+You know which option is right. You also know which one is easiest.`,
+  prompt: 'What do you decide?',
+  choices: [
+    { ltr:'A', txt: 'Email Meridian now: "I need to correct my resume before we go further. I listed Event Coordinator for the Marketing Club — I should have written Member. I attended two meetings. I am sorry for the inaccuracy."', next: 'c4_emailed', pts: 'c3_email_before', label: 'Emailed correction before interview' },
+    { ltr:'B', txt: 'Look up the club events from last year and prepare a story. Maybe she will not ask directly. Maybe you can get through it.', next: 'c4_prepared_story', pts: 'c3_bluff', label: 'Prepared a false story for interview' },
+  ]
+},
+
+c3_dismiss: {
+  type: 'decision', tag: 'Scene 3 of 5', path: 'Path C — Dismissed Warning', step: 3,
+  head: 'The Call Comes',
+  body: `Meridian calls three days later. You are in.
+
+The night before the interview you look up the Marketing Club page to refresh your memory on what events they might have run. You need to be ready.
+
+The faculty advisor is listed as Danielle Chen.
+
+You feel the floor shift under you.
+
+The person interviewing you tomorrow runs the club you claimed to coordinate. She knows every event, every officer, every member. You have one night to decide how to walk into that room.`,
+  prompt: 'What do you do the night before?',
+  choices: [
+    { ltr:'A', txt: 'Email Danielle tonight: "I need to disclose something before our interview tomorrow. I listed Event Coordinator on my resume but I only attended two meetings. I want to be honest about this before we meet."', next: 'c4_emailed', pts: 'c3_email_before', label: 'Emailed correction the night before' },
+    { ltr:'B', txt: 'Walk in tomorrow and come clean at the start of the interview — take control before she can ask.', next: 'c4_walk_in_clean', pts: 'c3_email_before', label: 'Decided to come clean at interview start' },
+  ]
+},
+
+c4_emailed: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path C — Email Correction', step: 4,
+  head: 'Her Reply Comes at 7am',
+  body: `You send the email and wait.
+
+Her reply arrives at seven in the morning: "Thank you for letting me know. I will see you at ten."
+
+Five words. No warmth, no coldness. You cannot read it.
+
+You sit across from her at ten. She has your resume in front of her with a note in the margin. She looks up.
+
+"Tell me about the real version of your resume. All of it."
+
+She is not asking only about the club.`,
+  prompt: 'What do you tell her?',
+  choices: [
+    { ltr:'A', txt: 'Everything. The GPA is 2.8 not 3.2. The club was two meetings. The job title is Barista. And then — without being asked — the true version of each: the GPA arc, what you actually did at work, why you thought you needed to inflate it.', next: 'end_c_email_full', pts: 'c5_full_honest', label: 'Disclosed everything honestly' },
+    { ltr:'B', txt: 'Correct the club title and leave the GPA and job title alone. You already corrected the biggest lie. Maybe that is enough.', next: 'end_c_partial_honest', pts: 'c5_partial', label: 'Corrected club only, held the others' },
+  ]
+},
+
+c4_walk_in_clean: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path C — Walk-In Correction', step: 4,
+  head: 'Before She Opens the Folder',
+  body: `You sit down. Danielle Chen picks up your resume. Before she can say a word you lean forward slightly.
+
+"Before we start, I need to correct something."
+
+She sets the resume back down and looks at you.
+
+"All right," she says.
+
+You have her full attention. What you say in the next thirty seconds will define this entire interaction.`,
+  prompt: 'What do you say?',
+  choices: [
+    { ltr:'A', txt: 'Everything at once: "The GPA is 2.8 not 3.2. I listed Event Coordinator but I only attended two meetings. My job title is Barista. I want to tell you the honest version of all three and let you decide from there."', next: 'end_c_walkin_full', pts: 'c5_full_honest', label: 'Disclosed all fabrications upfront' },
+    { ltr:'B', txt: 'Just the club: "I listed Event Coordinator but I was only a member — I attended two meetings. I should not have written it that way." You leave the GPA and job title alone.', next: 'end_c_partial_honest', pts: 'c5_partial', label: 'Disclosed club only at walk-in' },
+  ]
+},
+
+c4_prepared_story: {
+  type: 'decision', tag: 'Scene 4 of 5', path: 'Path C — Prepared to Bluff', step: 4,
+  head: 'She Knows',
+  body: `You walk in and the interview starts normally. Danielle is reading your resume.
+
+"Tell me about your role as Event Coordinator."
+
+You deliver your prepared answer — general, rehearsed, careful.
+
+She writes something. Then: "Who was the president of the club that semester?"
+
+You do not know.
+
+"What was the fall event you helped coordinate?"
+
+You do not know that either.
+
+She sets your resume down slowly.
+
+"I have advised the Marketing Club for seven years. I know every officer and every event. Your name is not in any record I have." She pauses. "I would like you to tell me the truth about this resume."
+
+There is no performance left. The room is very quiet.`,
+  prompt: 'What do you do?',
+  choices: [
+    { ltr:'A', txt: 'Tell her all of it. The club was two meetings. The GPA is 2.8 not 3.2. The job title is Barista. You tell her why you made those choices and what the true version of your record actually looks like.', next: 'end_c_caught_full', pts: 'c5_full_honest', label: 'Came fully clean after being caught' },
+    { ltr:'B', txt: 'Admit the club title but hold the line on the GPA and job title. Partial damage control.', next: 'end_c_caught_partial', pts: 'c5_partial', label: 'Partial admission after being caught' },
+  ]
+},
+
+// ═══════════════════════════════════════════
+// ENDINGS
+// ═══════════════════════════════════════════
+
+// PATH A ENDINGS
+end_a_full_success: {
+  type: 'ending', result: 'success', tag: 'Ending — Path A',
+  path: 'Honest resume → Owned the number → Full context → Real story → Strong question',
+  head: 'You Get the Internship',
+  body: `Danielle is quiet for a moment after you ask the question. Then she smiles — the first real one of the interview.
+
+"That took nerve," she says. "The answer is: the cover letter told me there was something worth hearing. You confirmed it."
+
+She offers you the position before you leave the building.
+
+Three months later you are leading a client campaign presentation with two full-time employees in the room. Your supervisor tells you afterward that you were the strongest intern they have had in four years.
+
+When you update your resume, the GPA stays at 2.8. You have never needed to explain it since.`,
+  reflection: `This outcome required honesty at every single decision point — not just once, but consistently under pressure. What does that tell you about the difference between a single honest moment and an ethical standard? In your credo draft, how do you describe the version of yourself who showed up in this interview — and what would it cost you to be that person consistently in a workplace?`
+},
+
+end_a_recover_close: {
+  type: 'ending', result: 'success', tag: 'Ending — Path A',
+  path: 'Honest resume → Deflected → Recovered → Came back at close',
+  head: 'The Recovery That Worked',
+  body: `Danielle looks at you for a long moment.
+
+"Why did you circle back to it?"
+
+"Because I gave you the managed version the first time and I did not want to leave the interview having done that."
+
+She nods slowly. She does not offer you the job on the spot. But she extends the interview by fifteen minutes and asks you three more questions she clearly had not planned to ask.
+
+A week later: an offer.
+
+The email says: "Your willingness to correct yourself mid-interview was the deciding factor."`,
+  reflection: `You made a mistake — deflecting — and then corrected it without being asked. What made the correction meaningful? What is the difference between correcting a mistake because you are caught and correcting it because you decided to? How does that difference connect to what a personal credo is for?`
+},
+
+end_a_recovered: {
+  type: 'ending', result: 'success', tag: 'Ending — Path A',
+  path: 'Honest resume → Deflected → Recovered → Honest about the deflection',
+  head: 'Honest About Being Dishonest',
+  body: `"That is a good answer," Danielle says. "And it is also honest about something most people would not admit in a job interview."
+
+The rest of the conversation runs twenty minutes longer than her calendar allowed. She apologises twice to someone waiting in the hallway.
+
+Three days later: an offer.
+
+In the offer email she writes one sentence: "Your ability to recognise and name your own behaviour in real time is rarer than you know."`,
+  reflection: `You were honest about the moment you tried not to be honest. What does it mean to have that kind of self-awareness under pressure? How does this connect to the ethical concept of integrity — unity between what you say you value and how you actually behave? Where does that gap show up in your own life, and what would your credo say about it?`
+},
+
+end_a_good: {
+  type: 'ending', result: 'partial', tag: 'Ending — Path A',
+  path: 'Honest resume → Good interview → Professional close',
+  head: 'A Strong Interview. Probably.',
+  body: `The interview ends on a professional note. Danielle thanks you for your time and tells you she will be in touch within the week.
+
+You hear back four days later. They went with another candidate — someone with slightly more relevant experience.
+
+The email is warm. It says you were a strong candidate and encourages you to apply again next cycle.
+
+You will never know how close it was. You did everything right. You just did not do anything that stood out.`,
+  reflection: `You were honest throughout — that is not nothing. But you consistently chose the safer, more professional version of every answer. What did you leave unsaid? Is there a difference between honest and fully honest — and does that difference matter when the stakes are real? What would your credo say about the obligation to advocate for yourself?`
+},
+
+end_a_solid: {
+  type: 'ending', result: 'partial', tag: 'Ending — Path A',
+  path: 'Honest resume → Deflected → Did not fully recover',
+  head: 'Solid. Not Memorable.',
+  body: `The interview ends well. Danielle thanks you and says she will follow up.
+
+You do not hear back for ten days. When the email comes it is a polite rejection — they went with someone with a closer profile.
+
+You will wonder later whether the deflection cost you. Whether if you had led with the full honest story you might have gotten a different answer. You will never know.`,
+  reflection: `You submitted an honest resume but then managed the hard question when it came up. At what point did you stop being fully honest? What stopped you from giving the direct answer? How does the idea of a single ethical standard apply here — not just in what you submit, but in how you handle the uncomfortable moment when it arrives?`
+},
+
+end_deflect_fail: {
+  type: 'ending', result: 'fail', tag: 'Ending — Path A',
+  path: 'Honest resume → Deflected → Kept deflecting',
+  head: 'The Deflection That Ended It',
+  body: `Danielle makes a note and moves on. The rest of the interview is polite and flat.
+
+You do not hear back.
+
+A month later you run into someone who interned at Meridian last summer. She tells you that Danielle once told her team: "I can work with a bad grade. I cannot work with someone who cannot talk straight about a bad grade."
+
+You submitted an honest resume. But in the one moment that mattered you chose not to be honest.`,
+  reflection: `You submitted an honest resume — which was the right first move. But when the hard question came, you managed around it instead of through it. What is the difference between an honest resume and honest self-presentation? Why did the deflection cost you more than the 2.8 GPA would have? What would your credo say about the obligation to be honest not just in what you submit, but in how you show up?`
+},
+
+// PATH B ENDINGS
+end_b_full_success: {
+  type: 'ending', result: 'success', tag: 'Ending — Path B',
+  path: 'Rounded GPA → Corrected it → Full honest context → Principled reason',
+  head: 'The Hardest Path to a Good Outcome',
+  body: `Danielle is quiet for a long moment.
+
+"Do you know why I am still talking to you?" she says finally.
+
+"I have interviewed a lot of people with stronger resumes than yours. I have never had someone send a correction at midnight. That told me something about how you are going to behave when something goes wrong in this building — and things go wrong in this building regularly."
+
+She offers you the position.
+
+"The GPA stays in your file," she says. "The midnight email stays in my memory."`,
+  reflection: `You made an ethical mistake — rounding the GPA — and then corrected it before you were caught. The correction cost you something: discomfort, vulnerability, the possibility of losing the opportunity. But it produced a better outcome than the rounded number would have. What does that tell you about the relationship between ethical behaviour and self-interest? Does your credo need to account for situations where doing the right thing is also the strategically smart thing — or only the situations where it is not?`
+},
+
+end_b_good: {
+  type: 'ending', result: 'partial', tag: 'Ending — Path B',
+  path: 'Rounded GPA → Self-corrected → Professional reason given',
+  head: 'Credit for Correcting. Doubt About Why.',
+  body: `Danielle thanks you and says she will follow up. She does — with an offer, but a conditional one. A shorter internship, one semester instead of a full summer, with a review at the midpoint.
+
+"I appreciated the correction," she writes in the offer. "I want to see how you handle the real work before extending the full opportunity."
+
+You take it. You do well. The full offer comes at the midpoint review.
+
+But you always wonder whether the professional answer — rather than the honest one — planted a small seed of doubt that you had to spend three months earning back.`,
+  reflection: `You corrected the mistake but gave the pragmatic reason rather than the honest one. What is the difference between those two reasons — and why does it matter which one you give? Is there a version of this outcome where you did everything right? Or does making the first mistake change the shape of everything that comes after?`
+},
+
+end_b_room_full: {
+  type: 'ending', result: 'partial', tag: 'Ending — Path B',
+  path: 'Rounded GPA → Left it → Corrected in interview room → Full context',
+  head: 'No Offer. The Right Kind of No.',
+  body: `Danielle listens to everything. When you finish she sits back.
+
+"You waited until the transcript conversation to correct this. I need to ask: would you have told me if I had not mentioned the transcript?"
+
+You do not have a clean answer. She can see that.
+
+"The offer has already gone to another candidate," she says. "But I want to tell you something. What you did in the last ten minutes of this interview was right. Come back next cycle with the accurate resume. Mention this conversation."
+
+You walk out without the job. But you walk out without having let the lie stand.`,
+  reflection: `You corrected the mistake in the room — but only after the transcript was mentioned. Danielle asked the right question: would you have said anything otherwise? What is your honest answer to that question? What does your answer tell you about the state of your ethical decision-making in that moment — and what would a credo need to say to help you make the better choice before the pressure arrives?`
+},
+
+end_b_room_brief: {
+  type: 'ending', result: 'partial', tag: 'Ending — Path B',
+  path: 'Rounded GPA → Left it → Brief correction in room → No context given',
+  head: 'Corrected. Not Explained.',
+  body: `Danielle nods. "I appreciate that." She writes something.
+
+The interview ends professionally. She says she will be in touch.
+
+You do not hear back.
+
+A brief rejection comes a week later. The note says you were a strong candidate and she encourages you to apply again.
+
+You fixed the lie. You just never replaced it with the truth.`,
+  reflection: `Correcting an inaccuracy is not the same as being honest. You removed the false number but never gave her the real story — the 2.3, the recovery, what you learned. What is the difference between an absence of falsehood and the presence of truth? What does your credo say about that distinction?`
+},
+
+end_b_rescinded: {
+  type: 'ending', result: 'fail', tag: 'Ending — Path B',
+  path: 'Rounded GPA → Left it → Said nothing in interview → Caught by transcript',
+  head: 'The Offer Is Rescinded',
+  body: `You shake her hand and walk out feeling good about the interview.
+
+Two days later: conditional offer.
+
+Friday morning: a different email.
+
+"After reviewing your official academic record, we identified a discrepancy with the GPA listed on your resume. We take the accuracy of application materials seriously. The conditional offer has been withdrawn. We will not be considering future applications from you."
+
+Future applications. Plural. You had thirty seconds in that interview room — thirty seconds when she told you they were going to check — and you said nothing.
+
+Two tenths of a point. A permanent door closed.`,
+  reflection: `You had a clear moment — she told you directly that a transcript request was coming — and you chose silence. What exactly did you tell yourself in that moment? At what point in this path did the outcome become likely? Trace it back to Scene 1: was the transcript conversation where you lost, or was it earlier? How does this connect to the slippery slope — one small compromise making the next one feel necessary?`
+},
+
+// PATH C ENDINGS
+end_c_email_full: {
+  type: 'ending', result: 'success', tag: 'Ending — Path C',
+  path: 'Fabricated resume → Took warning seriously → Emailed correction → Disclosed everything',
+  head: 'The Honest Version Was Stronger',
+  body: `Danielle listens to everything. When you finish she is quiet for a long time.
+
+"The version you just described — a 2.8 trending up, actual training experience that your title never reflected, two meetings instead of a coordinator role — that is a more interesting candidate than the one on the paper."
+
+She does not offer you the job today. She tells you the current position is already far along with another candidate.
+
+"But I want you to come back next cycle with the accurate resume. And I want you to know something: the email, and what you did in this room, matter more to me than the fact that you submitted something inaccurate. Most people would not have done either."
+
+Six months later you apply again. The first line of your cover letter mentions this conversation. You get the call within 48 hours.`,
+  reflection: `You made a significant ethical error — fabricating your resume — and then took a series of genuinely difficult steps to correct it before it could cause more damage. The honest version of your record turned out to be more compelling than the fabricated one. What does that tell you about the assumptions you were making when you fabricated it? What would your credo say about the difference between who you actually are and who you think you need to perform being?`
+},
+
+end_c_walkin_full: {
+  type: 'ending', result: 'success', tag: 'Ending — Path C',
+  path: 'Fabricated → Discovered Danielle → Decided to come clean → Full disclosure at interview',
+  head: 'Before She Could Ask',
+  body: `Danielle sits back and looks at you.
+
+"You walked in here knowing I run the Marketing Club."
+
+"Yes."
+
+"And you led with this anyway."
+
+"Yes."
+
+She is quiet for a moment. Then: "Tell me the true version of all three items."
+
+You do. Forty minutes later she walks you to the elevator herself.
+
+"I have given this position to candidates with better resumes," she says. "I have never given it to someone who walked in and dismantled their own application before I could. That tells me something I cannot learn from a GPA."
+
+The offer comes two days later.`,
+  reflection: `You fabricated a resume, discovered you were walking into an impossible situation, and chose to dismantle the fabrication yourself rather than let it fail in the room. What made that decision hard — and what made it right? What does it mean to take full ownership of a mistake before you are caught? How does this connect to the idea that a credo does your hardest thinking in advance?`
+},
+
+end_c_partial_honest: {
+  type: 'ending', result: 'partial', tag: 'Ending — Path C',
+  path: 'Fabricated → Partial correction only',
+  head: 'Half the Truth',
+  body: `Danielle listens to your correction about the club. She nods. She looks at your resume again.
+
+"What about the GPA? And the job title?"
+
+The room is very still.
+
+You held two lies while correcting one. She found them.
+
+The interview ends shortly after. She is professional and direct. No anger. She tells you she appreciates your time.
+
+You do not hear back. You never find out if coming fully clean would have changed anything. You know it would have.`,
+  reflection: `You corrected the most visible lie and held the others, hoping they would go unnoticed. What does it mean to be selectively honest? Is partial honesty meaningfully different from dishonesty? What does your credo say about the moments when honesty requires disclosing things that were not directly asked about?`
+},
+
+end_c_caught_full: {
+  type: 'ending', result: 'partial', tag: 'Ending — Path C',
+  path: 'Fabricated → Dismissed warning → Prepared story → Caught → Came fully clean',
+  head: 'Honest After Being Caught',
+  body: `You tell her everything. All of it. The GPA, the job title, the two meetings. And then — without being asked — the true version: the 2.3 and what followed, what you actually did at Campus Grounds, why you thought you needed to inflate the resume to get in the door.
+
+Danielle listens to all of it.
+
+"The interview is over," she says. "But I want to tell you something. What you just did — telling me the truth after I caught you, including the parts I had not asked about — that took something. Most people in your position would have stopped at the minimum."
+
+She does not flag your file.
+
+"Apply again next year. With the honest resume. If you do, mention this conversation."`,
+  reflection: `You were caught. And then, when you had every reason to minimise and manage the damage, you gave her everything instead. What is the difference between that choice and stopping at the minimum? You cannot undo the fabrication. But does the response to being caught tell us something important about your ethics? What would your credo say about how to behave in the moment after an ethical failure?`
+},
+
+end_c_caught_partial: {
+  type: 'ending', result: 'fail', tag: 'Ending — Path C',
+  path: 'Fabricated → Dismissed warning → Caught → Partial admission',
+  head: 'Caught. And Still Managing It.',
+  body: `You admit the club title. You hold the line on the GPA and the job title.
+
+Danielle sets your resume face-down on the desk.
+
+"I have been doing this long enough to recognise when someone is still managing the story," she says. "We are going to end the interview here."
+
+She flags your file. She shares her notes with your campus career services office.
+
+You find out about the flag three months later when a different interviewer at a different firm mentions it.
+
+The first fabrication cost you this opportunity. The partial admission in the room extended the damage further than it needed to go.`,
+  reflection: `You fabricated the resume and then, when caught, made a strategic calculation about how much to admit. What drove that calculation? What did it cost you — in this interview and beyond? The slippery slope works in both directions: each honest step can stop the slide, and each evasion can extend it. At what point in this entire path did you have the best opportunity to change the outcome — and what stopped you from taking it?`
+}
+
+}; // end scenes
+
+// ═══════════════════════════════════════════
+// RENDER ENGINE
+// ═══════════════════════════════════════════
+function render(key) {
+  currentScene = key;
+  const card = document.getElementById('card');
+
+  // Hide static start screen if moving away from start
+  const staticStart = document.getElementById('static-start');
+  if (staticStart && key !== 'start') {
+    staticStart.style.display = 'none';
+  }
+  if (staticStart && key === 'start') {
+    staticStart.style.display = 'block';
+    card.style.opacity = '1';
+    card.style.transform = 'none';
+    refreshDots(S[key]);
+    refreshScore();
+    return;
+  }
+
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(14px)';
+  card.style.transition = 'opacity .18s, transform .18s';
+  setTimeout(function() {
+    try {
+      card.innerHTML = build(S[key]);
+    } catch(err) {
+      card.innerHTML = '<div style="padding:40px;color:#A32D2D;font-size:16px;">Error loading scene. Please refresh the page.</div>';
+      console.error('Render error:', err);
+      return;
+    }
+    card.style.transition = 'none';
+    setTimeout(function() {
+      card.style.transition = 'opacity .38s ease, transform .38s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, 20);
+    refreshDots(S[key]);
+    refreshScore();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (S[key].type === 'ending') submitResult(S[key]);
+  }, 200);
+}
+
+let currentScene = 'start';
+
+function build(s) {
+  if (s.type === 'start')    return buildStart();
+  if (s.type === 'decision') return buildDecision(s);
+  if (s.type === 'ending')   return buildEnding(s);
+  return '';
+}
+
+function buildStart() {
+  return `<div class="start">
+    <div class="s-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+    <div class="s-head">The Resume</div>
+    <div class="s-sub">A Business Ethics Simulation — Unit 1</div>
+    <div class="s-p">You are a college sophomore. Tonight is the deadline for what could be your best internship opportunity yet — a paid marketing position at a firm that recruits from your school every year.</div>
+    <div class="s-p">You open your resume. And the familiar discomfort begins.</div>
+    <div class="s-p">The decisions you make in the next fifteen minutes will follow you further than you think.</div>
+    <div class="s-note">There is no single right path. But every path has real consequences.</div>
+    <div class="field-wrap">
+      <label class="field-lbl" for="nIn">Your full name</label>
+      <input class="field-input" id="nIn" type="text" placeholder="First Last" autocomplete="name">
+      <div class="field-err" id="nErr">Please enter your name to continue.</div>
+    </div>
+
+    <button class="go-btn" id="goBtn">Begin the Scenario <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    <div class="setup">
+      <div class="setup-h">Instructor: Google Sheets Setup (one time, ~10 minutes)</div>
+      <div class="step-row"><div class="step-n">1</div><div class="step-t">Go to <code>script.google.com</code>, sign in with Google, click <code>New project</code></div></div>
+      <div class="step-row"><div class="step-n">2</div><div class="step-t">Delete all existing code. Paste the Apps Script code below exactly as shown.</div></div>
+      <div class="step-row"><div class="step-n">3</div><div class="step-t">Click <code>Deploy → New deployment → Web app</code>. Set <code>Execute as: Me</code> and <code>Who has access: Anyone</code>. Click Deploy. Copy the Web App URL.</div></div>
+      <div class="step-row"><div class="step-n">4</div><div class="step-t">Paste that URL into the field above (or pre-fill it in the HTML file before distributing to students). A spreadsheet is created automatically on the first submission.</div></div>
+      <div class="step-row"><div class="step-n">5</div><div class="step-t">Each student submission adds a row: Timestamp, Name, Score, Percent, Letter Grade, Path, and all choices made.</div></div>
+      <div class="code-block">function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      'Timestamp','Name','Score','Percent',
+      'Letter Grade','Path','Choices'
+    ]);
+  }
+  sheet.appendRow([
+    e.parameter.timestamp || '',
+    e.parameter.name || '',
+    e.parameter.score || '',
+    e.parameter.pct || '',
+    e.parameter.grade || '',
+    e.parameter.path || '',
+    e.parameter.choices || ''
+  ]);
+  return ContentService
+    .createTextOutput('OK')
+    .setMimeType(ContentService.MimeType.TEXT);
+}</div>
+    </div>
+  </div>`;
+}
+
+function buildDecision(s) {
+  const pct = Math.round((rawScore / (PATH_MAX[pathKey] || 100)) * 100);
+  const choices = s.choices.map(function(c) {
+    var safeLabel = c.label.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
+    var safePath = (c.path || '').replace(/'/g, '');
+    var safePts = (c.pts || '').replace(/'/g, '');
+    return '<button class="ch" onclick="makeChoice(\'' + c.next + '\',\'' + safePts + '\',\'' + safeLabel + '\',\'' + safePath + '\')">' +
+      '<span class="ch-ltr">' + c.ltr + '</span>' +
+      '<span class="ch-txt">' + c.txt + '</span>' +
+      '</button>';
+  }).join('');
+  return `
+    <div class="scene-bar"><span class="s-tag">${s.tag}</span><span class="s-path">${s.path}</span></div>
+    <div class="body">
+      <h2 class="scene-h">${s.head}</h2>
+      <div class="scene-p">${s.body}</div>
+      <div class="prompt-lbl">${s.prompt}</div>
+      <div class="choices">${choices}</div>
+      <div class="meter-row">
+        <span style="font-size:12px;color:var(--gray);">Running score</span>
+        <div class="meter-bg"><div class="meter-fill" style="width:${pct}%"></div></div>
+        <span class="meter-lbl">${rawScore} pts</span>
+      </div>
+    </div>
+    ${buildTrail()}`;
+}
+
+function buildEnding(s) {
+  const pct = Math.round((rawScore / (PATH_MAX[pathKey] || 100)) * 100);
+  const grade = pct >= 90?'A': pct >= 80?'B': pct >= 70?'C': pct >= 60?'D':'F';
+  const labels = { success: '✓ Success', fail: '✗ Outcome', partial: '⚠ Partial Credit' };
+  return `
+    <div class="e-stripe ${s.result}"></div>
+    <div class="scene-bar"><span class="s-tag">${s.tag}</span><span class="s-path">${s.path}</span></div>
+    <div class="body">
+      <div class="badge ${s.result}">${labels[s.result]}</div>
+      <h2 class="scene-h">${s.head}</h2>
+      <div class="scene-p">${s.body}</div>
+      <div class="reflect-box">
+        <div class="r-lbl">Reflect — bring this to your credo draft</div>
+        <div class="r-txt">${s.reflection}</div>
+      </div>
+      <div class="score-box">
+        <div class="big-score ${s.result}">${pct}%</div>
+        <div class="score-detail">
+          <div class="sd-label">Final score — ${rawScore} of ${PATH_MAX[pathKey]} points</div>
+          <div class="sd-val">Letter Grade: ${grade}</div>
+          <div class="sd-label" style="margin-top:3px;">${studentName}</div>
+        </div>
+      </div>
+      <div class="submit-msg" id="sub-msg">Submitting to gradebook...</div>
+      <button class="restart" onclick="restartSim()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.8"/></svg>
+        Try a different path
+      </button>
+    </div>
+    ${buildTrail()}`;
+}
+
+function buildTrail() {
+  if (!trail.length) return '';
+  const html = trail.map((t,i) =>
+    `<span class="t-item${i===trail.length-1?' t-cur':''}">${t}</span>`
+  ).join('<span style="color:var(--gray);font-size:10px;padding-top:3px;">›</span>');
+  return `<div class="trail">${html}</div>`;
+}
+
+function refreshDots(s) {
+  const el = document.getElementById('dots');
+  el.innerHTML = '';
+  for (let i=1; i<=TOTAL_STEPS; i++) {
+    const d = document.createElement('div'); d.className='dot';
+    const step = s.step || (s.type==='ending' ? TOTAL_STEPS+1 : 0);
+    if (i < step) d.classList.add('done');
+    else if (i === step) d.classList.add('active');
+    el.appendChild(d);
+  }
+}
+
+function refreshScore() {
+  document.getElementById('score-live').textContent = rawScore;
+}
+
+async function submitResult(s) {
+  const pct = Math.round((rawScore / (PATH_MAX[pathKey] || 100)) * 100);
+  const grade = pct>=90?'A': pct>=80?'B': pct>=70?'C': pct>=60?'D':'F';
+  const msgEl = document.getElementById('sub-msg');
+  if (!SHEET_URL) {
+    if (msgEl) { msgEl.textContent = 'No gradebook URL — show this screen to your instructor.'; msgEl.className='submit-msg err'; }
+    return;
+  }
+  try {
+    const p = new URLSearchParams({
+      name: studentName, score: rawScore, pct: pct+'%', grade,
+      path: s.path, choices: trail.join(' › '),
+      timestamp: new Date().toLocaleString()
+    });
+    await fetch(SHEET_URL + '?' + p.toString(), { method:'GET', mode:'no-cors' });
+    if (msgEl) { msgEl.textContent = '✓ Score submitted to gradebook.'; msgEl.className='submit-msg ok'; }
+  } catch(e) {
+    if (msgEl) { msgEl.textContent = 'Could not reach gradebook. Screenshot this screen for your instructor.'; msgEl.className='submit-msg err'; }
+  }
+}
+
+// ═══════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════
+// Global click handlers — called directly from HTML onclick attributes
+function startGame() {
+  var nIn = document.getElementById('nIn');
+  var nErr = document.getElementById('nErr');
+  var name = nIn ? nIn.value.trim() : '';
+  if (!name) {
+    if (nErr) nErr.style.display = 'block';
+    if (nIn) nIn.focus();
+    return;
+  }
+  studentName = name;
+  // SHEET_URL is pre-filled by instructor in the SHEET_URL variable above
+  trail = [name];
+  rawScore = 0;
+  scoreLog = [];
+  render('s1');
+}
+
+function makeChoice(next, ptsKey, label, pathVal) {
+  if (pathVal) pathKey = pathVal;
+  if (ptsKey && PTS[ptsKey] !== undefined) {
+    rawScore += PTS[ptsKey];
+    scoreLog.push({ key: ptsKey, pts: PTS[ptsKey] });
+  }
+  trail.push(label);
+  render(next);
+}
+
+function restartSim() {
+  studentName = ''; trail = []; scoreLog = []; rawScore = 0; pathKey = 'A';
+  const card = document.getElementById('card');
+  const staticStart = document.getElementById('static-start');
+  if (staticStart) {
+    staticStart.style.display = 'block';
+    card.style.opacity = '1';
+    card.style.transform = 'none';
+  }
+  // Clear name and sheet fields
+  var nIn = document.getElementById('nIn');
+  if (nIn) nIn.value = '';
+  refreshDots(S['start']);
+  refreshScore();
+}
+
+// Initialize dots and score on page load
+function initPage() {
+  refreshDots(S['start']);
+  refreshScore();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPage);
+} else {
+  initPage();
+}
+</script>
+</body>
+</html>
