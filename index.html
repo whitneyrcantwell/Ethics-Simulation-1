@@ -189,7 +189,7 @@ body{font-family:Georgia,'Times New Roman',serif;background:#2C2C2A!important;co
 // Replace the empty string with your Web App URL
 // Example: let SHEET_URL = 'https://script.google.com/macros/s/ABC123.../exec';
 // ═══════════════════════════════════════════════════════
-let SHEET_URL = '';
+let SHEET_URL = 'https://script.google.com/macros/s/AKfycbyQrodX2r9p23YJblvHmkBhOru4KVoJum1z0702f6gafuS11kZRv6Hcrdp_swuGhs10/exec';
 async function submitGrade(name, pts, pct, pathName, choices) {
   if (!SHEET_URL) return { ok: false, msg: 'No gradebook URL — show this screen to your instructor.' };
   try {
