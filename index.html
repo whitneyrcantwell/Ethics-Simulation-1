@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Resume — Business Ethics Simulation</title>
 <!-- No external fonts -- using system serif stack -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
   --red:#A32D2D;--red-dk:#791F1F;--red-lt:#FCEBEB;--red-md:#F7C1C1;
@@ -101,16 +102,13 @@ body{font-family:Georgia,'Times New Roman',serif;background:#2C2C2A!important;co
 .field-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s;}
 .field-input:focus{border-color:var(--red);}
 .field-err{font-size:12px;color:var(--red);margin-top:5px;display:none;}
-/* sheet-wrap styles removed -- URL pre-filled by instructor */
+.name-row{display:flex;gap:12px;max-width:360px;margin:0 auto 20px;}
+.name-row .field-wrap{flex:1;margin-bottom:0;}
 .go-btn{display:inline-flex;align-items:center;gap:8px;padding:15px 38px;background:var(--red);color:var(--paper);border:none;border-radius:10px;cursor:pointer;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:600;transition:background .2s,transform .15s;}
 .go-btn:hover{background:var(--red-dk);transform:translateY(-2px);}
-.setup{margin-top:26px;background:rgba(44,44,42,.06);border-radius:12px;padding:22px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto;}
-.setup-h{font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:13px;}
-.step-row{display:flex;gap:11px;margin-bottom:11px;align-items:flex-start;}
-.step-n{width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
-.step-t{font-size:13px;color:var(--charcoal);line-height:1.65;}
-.step-t code{background:rgba(163,45,45,.1);color:var(--red);padding:1px 5px;border-radius:3px;font-size:12px;}
-.code-block{margin-top:14px;background:rgba(44,44,42,.08);border-radius:8px;padding:14px;font-size:11px;color:var(--charcoal);line-height:1.75;white-space:pre-wrap;font-family:monospace;}
+.pdf-btn{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:13px 28px;background:var(--red);color:var(--paper);border:none;border-radius:8px;cursor:pointer;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:600;transition:background .2s,transform .15s;}
+.pdf-btn:hover{background:var(--red-dk);transform:translateY(-1px);}
+.pdf-note{font-size:12px;color:var(--red);font-weight:600;margin-top:8px;margin-bottom:4px;}
 
 @media(max-width:600px){
   .body{padding:22px 18px 18px;}
@@ -141,43 +139,19 @@ body{font-family:Georgia,'Times New Roman',serif;background:#2C2C2A!important;co
 <div class="s-p">You open your resume. And the familiar discomfort begins.</div>
 <div class="s-p">The decisions you make in the next fifteen minutes will follow you further than you think.</div>
 <div class="s-note">There is no single right path. But every path has real consequences.</div>
-<div class="field-wrap">
-<label class="field-lbl" for="nIn">Your full name</label>
-<input class="field-input" id="nIn" type="text" placeholder="First Last" autocomplete="name">
-<div class="field-err" id="nErr">Please enter your name to continue.</div>
+<div class="name-row">
+  <div class="field-wrap">
+    <label class="field-lbl" for="fnIn">First name</label>
+    <input class="field-input" id="fnIn" type="text" placeholder="First" autocomplete="given-name">
+  </div>
+  <div class="field-wrap">
+    <label class="field-lbl" for="lnIn">Last name</label>
+    <input class="field-input" id="lnIn" type="text" placeholder="Last" autocomplete="family-name">
+  </div>
 </div>
+<div class="field-err" id="nErr">Please enter your first and last name to continue.</div>
 
 <button class="go-btn" onclick="startGame()">Begin the Scenario &#9654;</button>
-<div class="setup">
-<div class="setup-h">Instructor: Google Sheets Setup (one time, ~10 minutes)</div>
-<div class="step-row"><div class="step-n">1</div><div class="step-t">Go to <code>script.google.com</code>, sign in, click <code>New project</code></div></div>
-<div class="step-row"><div class="step-n">2</div><div class="step-t">Delete all existing code and paste the Apps Script code shown below.</div></div>
-<div class="step-row"><div class="step-n">3</div><div class="step-t">Click <code>Deploy &rarr; New deployment &rarr; Web app</code>. Set Execute as: Me and Who has access: Anyone. Copy the Web App URL.</div></div>
-<div class="step-row"><div class="step-n">4</div><div class="step-t">Paste that URL into the field above before distributing to students.</div></div>
-<div class="step-row"><div class="step-n">5</div><div class="step-t">Each submission adds a row: Timestamp, Name, Score, Percent, Letter Grade, Path, Choices.</div></div>
-<div class="code-block">function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getActiveSheet();
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow([
-      'Timestamp','Name','Score','Percent',
-      'Letter Grade','Path','Choices'
-    ]);
-  }
-  sheet.appendRow([
-    e.parameter.timestamp || '',
-    e.parameter.name || '',
-    e.parameter.score || '',
-    e.parameter.pct || '',
-    e.parameter.grade || '',
-    e.parameter.path || '',
-    e.parameter.choices || ''
-  ]);
-  return ContentService
-    .createTextOutput('OK')
-    .setMimeType(ContentService.MimeType.TEXT);
-}</div>
-</div>
 </div>
 </div></div>
 <script>
@@ -252,6 +226,9 @@ const PATH_MAX = {
 // STATE
 // ═══════════════════════════════════════════
 let studentName = '';
+let firstName = '';
+let lastName = '';
+let currentEndingScene = null;
 let trail = [];
 let scoreLog = [];
 let rawScore = 0;
@@ -972,7 +949,7 @@ function render(key) {
     refreshDots(S[key]);
     refreshScore();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (S[key].type === 'ending') submitResult(S[key]);
+    if (S[key].type === 'ending') { currentEndingScene = key; submitResult(S[key]); }
   }, 200);
 }
 
@@ -1085,6 +1062,13 @@ function buildEnding(s) {
         </div>
       </div>
       <div class="submit-msg" id="sub-msg">Submitting to gradebook...</div>
+      <div>
+        <button class="pdf-btn" onclick="generatePDF()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF Report
+        </button>
+        <div class="pdf-note">You must submit this PDF to receive credit for this assignment.</div>
+      </div>
       <button class="restart" onclick="restartSim()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.8"/></svg>
         Try a different path
@@ -1143,17 +1127,22 @@ async function submitResult(s) {
 // ═══════════════════════════════════════════
 // Global click handlers — called directly from HTML onclick attributes
 function startGame() {
-  var nIn = document.getElementById('nIn');
+  var fnIn = document.getElementById('fnIn');
+  var lnIn = document.getElementById('lnIn');
   var nErr = document.getElementById('nErr');
-  var name = nIn ? nIn.value.trim() : '';
-  if (!name) {
+  var fn = fnIn ? fnIn.value.trim() : '';
+  var ln = lnIn ? lnIn.value.trim() : '';
+  if (!fn || !ln) {
     if (nErr) nErr.style.display = 'block';
-    if (nIn) nIn.focus();
+    if (!fn && fnIn) fnIn.focus();
+    else if (!ln && lnIn) lnIn.focus();
     return;
   }
-  studentName = name;
-  // SHEET_URL is pre-filled by instructor in the SHEET_URL variable above
-  trail = [name];
+  firstName = fn;
+  lastName = ln;
+  studentName = fn + ' ' + ln;
+  currentEndingScene = null;
+  trail = [studentName];
   rawScore = 0;
   scoreLog = [];
   render('s1');
@@ -1169,8 +1158,182 @@ function makeChoice(next, ptsKey, label, pathVal) {
   render(next);
 }
 
+function makeSubmissionCode(name, score, pct, grade, path, choices) {
+  const raw = [name, score, pct, grade, path, ...choices].join('|');
+  let h = 0x811c9dc5;
+  for (let i = 0; i < raw.length; i++) {
+    h ^= raw.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+    h = h >>> 0;
+  }
+  return h.toString(36).toUpperCase().padStart(7, '0');
+}
+
+function generatePDF() {
+  if (!window.jspdf) { alert('PDF library not loaded. Please check your internet connection and try again.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  const W = doc.internal.pageSize.getWidth();
+  const margin = 60;
+  const contentW = W - margin * 2;
+  let y = 50;
+
+  const pct = Math.round((rawScore / (PATH_MAX[pathKey] || 100)) * 100);
+  const grade = pct>=90?'A': pct>=80?'B': pct>=70?'C': pct>=60?'D':'F';
+  const ending = currentEndingScene ? S[currentEndingScene] : null;
+  const choices = trail.slice(1);
+  const code = makeSubmissionCode(studentName, rawScore, pct, grade, pathKey, choices);
+
+  // Red header bar
+  doc.setFillColor(163, 45, 45);
+  doc.rect(0, 0, W, 8, 'F');
+
+  // Title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.setTextColor(44, 44, 42);
+  doc.text('Business Ethics Simulation — The Resume', margin, y);
+  y += 26;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.setTextColor(136, 135, 128);
+  doc.text('Unit 1 Completion Report', margin, y);
+  y += 28;
+
+  doc.setDrawColor(232, 228, 222);
+  doc.line(margin, y, W - margin, y);
+  y += 22;
+
+  // Student info
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(163, 45, 45);
+  doc.text('STUDENT', margin, y);
+  y += 16;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.setTextColor(44, 44, 42);
+  doc.text(studentName, margin, y);
+  y += 20;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(136, 135, 128);
+  doc.text('Completed: ' + new Date().toLocaleString(), margin, y);
+  y += 28;
+
+  doc.setDrawColor(232, 228, 222);
+  doc.line(margin, y, W - margin, y);
+  y += 22;
+
+  // Results
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(163, 45, 45);
+  doc.text('RESULTS', margin, y);
+  y += 16;
+
+  const resultColor = ending && ending.result === 'success' ? [26,107,58] : ending && ending.result === 'fail' ? [163,45,45] : [139,94,0];
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(40);
+  doc.setTextColor(...resultColor);
+  doc.text(pct + '%', margin, y + 32);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.setTextColor(44, 44, 42);
+  doc.text('Score: ' + rawScore + ' of ' + PATH_MAX[pathKey] + ' points', margin + 90, y + 14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Letter Grade: ' + grade, margin + 90, y + 30);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(136, 135, 128);
+  if (ending) doc.text('Path: ' + ending.path, margin + 90, y + 46);
+  y += 64;
+
+  doc.setDrawColor(232, 228, 222);
+  doc.line(margin, y, W - margin, y);
+  y += 22;
+
+  // Decisions
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(163, 45, 45);
+  doc.text('DECISIONS MADE', margin, y);
+  y += 16;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.setTextColor(44, 44, 42);
+  choices.forEach(function(c, i) {
+    const lines = doc.splitTextToSize((i + 1) + '. ' + c, contentW);
+    lines.forEach(function(line) {
+      if (y > 690) { doc.addPage(); y = 50; }
+      doc.text(line, margin, y);
+      y += 15;
+    });
+    y += 4;
+  });
+  y += 14;
+
+  // Reflection
+  if (ending && ending.reflection) {
+    if (y > 620) { doc.addPage(); y = 50; }
+    doc.setDrawColor(232, 228, 222);
+    doc.line(margin, y, W - margin, y);
+    y += 22;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(163, 45, 45);
+    doc.text('REFLECTION PROMPT', margin, y);
+    y += 16;
+
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    doc.setTextColor(68, 68, 65);
+    const refLines = doc.splitTextToSize(ending.reflection, contentW);
+    refLines.forEach(function(line) {
+      if (y > 700) { doc.addPage(); y = 50; }
+      doc.text(line, margin, y);
+      y += 14;
+    });
+    y += 16;
+  }
+
+  // Submission code
+  if (y > 650) { doc.addPage(); y = 50; }
+  doc.setDrawColor(232, 228, 222);
+  doc.line(margin, y, W - margin, y);
+  y += 22;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(163, 45, 45);
+  doc.text('SUBMISSION CODE', margin, y);
+  y += 16;
+
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(44, 44, 42);
+  doc.text('ETH-' + code, margin, y);
+  y += 20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(136, 135, 128);
+  doc.text('Present this document to your instructor to receive credit for this assignment.', margin, y);
+
+  // Red footer bar
+  const pageH = doc.internal.pageSize.getHeight();
+  doc.setFillColor(163, 45, 45);
+  doc.rect(0, pageH - 8, W, 8, 'F');
+
+  const filename = lastName.replace(/\s/g,'') + '_' + firstName.replace(/\s/g,'') + '_EthicsSim1.pdf';
+  doc.save(filename);
+}
+
 function restartSim() {
-  studentName = ''; trail = []; scoreLog = []; rawScore = 0; pathKey = 'A';
+  studentName = ''; firstName = ''; lastName = ''; currentEndingScene = null;
+  trail = []; scoreLog = []; rawScore = 0; pathKey = 'A';
   const card = document.getElementById('card');
   const staticStart = document.getElementById('static-start');
   if (staticStart) {
@@ -1178,9 +1341,10 @@ function restartSim() {
     card.style.opacity = '1';
     card.style.transform = 'none';
   }
-  // Clear name and sheet fields
-  var nIn = document.getElementById('nIn');
-  if (nIn) nIn.value = '';
+  var fnIn = document.getElementById('fnIn');
+  var lnIn = document.getElementById('lnIn');
+  if (fnIn) fnIn.value = '';
+  if (lnIn) lnIn.value = '';
   refreshDots(S['start']);
   refreshScore();
 }
